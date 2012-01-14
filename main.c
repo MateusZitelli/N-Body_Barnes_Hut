@@ -21,13 +21,13 @@
 #include <stdlib.h>
 #include <GL/glut.h>
 #include "helper.h"
-#define colorMax 70E3
+#define colorMax 10E2
 
 float angleX = 0;
 float angleY = 0;
 float positionZ = -10;
 int paused = 0, render = 1;
-frame = 0;
+int frame = 0;
 struct timespec start, end;
 bitmap_t image;
 
@@ -64,15 +64,12 @@ void drawScene()
 	glRotatef(angleX, 0.0f, 1.0f, 0.0f);
 	glRotatef(angleY, 1.0f, 0.0f, 0.0f);
 	glBegin(GL_POINTS);
-
 	for (i = 0; i < BODIES_QUANTITY; i++) {
-	        acel = bodies[i].acel / bodies[i].mass / colorMax;
-	        if(acel > 1) acel = 1;
+	        acel = bodies[i].acel;
 	        r = acel;
-	        if(r < 0) r = -r;
-	        if(r > 1) r = 1 - acel * 2;
+	        if(r > 1) r =1;
 	        g = acel;
-	        if(g > 0.5) g = 1 - r * 2;
+	        if(g > 1.0) g = 1 + r * 2;
 	        b = g + r;
 	        glColor4f(r + 0.2, g + 0.2, b + 0.2, 0.4f);
 		glVertex3f(bodies[i].position.x / (50000 * LY),
@@ -98,9 +95,8 @@ void drawScene()
 
 void update(int value)
 {
-	clock_gettime(CLOCK_MONOTONIC, &start);
+	if(frame == 0) clock_gettime(CLOCK_MONOTONIC, &start);
 	int i, j, k;
-
 	//angleX += 0.5;
 	if (angleX > 360)
 		angleX -= 360;
@@ -113,19 +109,14 @@ void update(int value)
 	roots_quantity = 0;
 	resetNodes();
 	divideNode(&nodes[0]);
+#pragma omp parallel for
 	for (i = 0; i < node_quantity; i++) {
 		setCenterOfMass(&nodes[i]);
 	}
+#pragma omp parallel for
 	for (i = 0; i < roots_quantity; i++) {
+#pragma omp parallel for
 		for (j = 0; j < roots[i]->bodies_quantity; j++) {
-			for (k = 0; k < roots[i]->bodies_quantity; k++) {
-				if (k != j) {
-					applyForceBetweenBodies(roots[i]->
-								bodies[j],
-								roots[i]->
-								bodies[k]);
-				}
-			}
 			forceOverNode(roots[i], NULL, roots[i]->bodies[j], 0);
 		}
 	}
@@ -136,20 +127,21 @@ void update(int value)
 		bodies[i].speed.x += bodies[i].force.x / bodies[i].mass;
 		bodies[i].speed.y += bodies[i].force.y / bodies[i].mass;
 		bodies[i].speed.z += bodies[i].force.z / bodies[i].mass;
-		bodies[i].acel = sqrt(bodies[i].force.x * bodies[i].force.x + bodies[i].force.y * bodies[i].force.y + bodies[i].force.z * bodies[i].force.z);
-		fprintf(positionData, "%i,%i,%i\n",
+		bodies[i].acel = sqrt(bodies[i].force.x * bodies[i].force.x + bodies[i].force.y * bodies[i].force.y + bodies[i].force.z * bodies[i].force.z) / bodies[i].mass / colorMax;
+		fprintf(positionData, "%i,%i,%i,%i\n",
 			(int)(bodies[i].position.x * 10E-16),
 			(int)(bodies[i].position.y * 10E-16),
-			(int)(bodies[i].position.z * 10E-16));
-		bodies[i].position.x += bodies[i].speed.x * 250E12;
-		bodies[i].position.y += bodies[i].speed.y * 250E12;
-		bodies[i].position.z += bodies[i].speed.z * 250E12;
+			(int)(bodies[i].position.z * 10E-16),
+			(int)bodies[i].acel);
+		bodies[i].position.x += bodies[i].speed.x * 5E13;
+		bodies[i].position.y += bodies[i].speed.y * 5E13;
+		bodies[i].position.z += bodies[i].speed.z * 5E13;
 		bodies[i].force.x = 0;
 		bodies[i].force.y = 0;
 		bodies[i].force.z = 0;
 	}
 	clock_gettime(CLOCK_MONOTONIC, &end);
-	printf("Time Ellapsed = %li\n", timespecDiff(&end, &start));
+	printf("Time Ellapsed = %f\n", timespecDiff(&end, &start) / (float)++frame);
 }
 
 void handleKeypress(unsigned char key, int x, int y)

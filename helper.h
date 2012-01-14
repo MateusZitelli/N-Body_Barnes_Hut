@@ -20,15 +20,15 @@
 #include <png.h>
 #include <stdint.h>
 #include <time.h>
-#define MAX_NODES 150000
+#define MAX_NODES 1000000
 #define BODIES_QUANTITY 10000
 #define K 6.67259E-11
-#define ALPHA 0.5
+#define ALPHA 1.0
 #define WIDTH 800
 #define HEIGHT 800
-#define EPS2 1E38
+#define EPS2 20E35
 #define PI 3.141592
-#define C 3E8
+#define C 3E100
 #define LY 9.4605284E15
 #define SIZE_OF_SIMULATION 120E3 * 5 * LY
 
@@ -272,7 +272,7 @@ void divideNode(struct node *node)
 {
 	if (node == NULL)
 		return;
-	if ((node->bodies_quantity == 1 || node->deep > 10) && node->bodies_quantity != 0) {
+	if (node->bodies_quantity == 1) {
 		roots[roots_quantity++] = node;
 		return;
 	} else if (node->bodies_quantity == 0) {
@@ -499,7 +499,7 @@ void applyForceBetweenBodies(struct body *b1, struct body *b2)
 	DistanceSquared =
 	    xDistance * xDistance + yDistance * yDistance +
 	    zDistance * zDistance + EPS2;
-	force = K * b2->mass * b1->mass / DistanceSquared ;
+	force = K * b2->mass * b1->mass / DistanceSquared * 0.5;
 	double dist = sqrt(DistanceSquared);
 	b1->force.x += xDistance / dist * force;
 	b1->force.y += yDistance / dist * force;
@@ -615,19 +615,19 @@ void init(void)
 		nodes[i].DSE = NULL;
 		nodes[i].DSW = NULL;
 	}
-	initializeNode(&nodes[0], NULL, -SIZE_OF_SIMULATION,
-		       -SIZE_OF_SIMULATION, -SIZE_OF_SIMULATION,
-		       SIZE_OF_SIMULATION, SIZE_OF_SIMULATION,
-		       SIZE_OF_SIMULATION, BODIES_QUANTITY, 0);
-	for (i = 0; i < BODIES_QUANTITY; i++) {
+	initializeNode(&nodes[0], NULL, -SIZE_OF_SIMULATION * 30,
+		       -SIZE_OF_SIMULATION * 30, -SIZE_OF_SIMULATION * 30,
+		       SIZE_OF_SIMULATION* 30, SIZE_OF_SIMULATION* 30,
+		       SIZE_OF_SIMULATION* 30, BODIES_QUANTITY* 30, 0);
+	for (i = 0; i < BODIES_QUANTITY / 20.0 * 19; i++) {
 #if 1
 		do {
 			vx = (rand() % 10000000 / 10000000.0) * 120E3 * LY -
 			    60E3 * LY;
 			vy = (rand() % 10000000 / 10000000.0) * 120E3 * LY -
 			    60E3 * LY;
-			vz = (rand() % 10000000 / 10000000.0) * 120E2 * LY -
-			    60E2 * LY;
+			vz = (rand() % 10000000 / 10000000.0) * 120E1 * LY -
+			    60E1 * LY;
 			dist = sqrt(vx * vx + vy * vy + vz * vz);
 		} while (dist > 60E3 * LY);
 #endif
@@ -638,13 +638,52 @@ void init(void)
 		bodies[i].force.y = 0;
 		bodies[i].force.z = 0;
 		theta = atan2(vy, vx) + PI / 2.0;
-		bodies[i].mass = 1E43 + (rand() % 10000000 / 10000000.0) * 4E51;
-		bodies[i].speed.x = ( 20E-17) * cos(theta) * dist;	// cos(theta) * 6.5 * 10E3 * (dist / (60E3 * LY) - 1.3) * (dist / (60E3 * LY));
-		bodies[i].speed.y = (20E-17) * sin(theta) * dist;	// sin(theta) * 6.5 * 10E3 * (dist / (60E3 * LY) - 1.3)* (dist / (60E3 * LY));
+		bodies[i].mass = 1E-10;
+		bodies[i].speed.x = 3E4 * cos(theta);	// cos(theta) * 6.5 * 10E3 * (dist / (60E3 * LY) - 1.3) * (dist / (60E3 * LY));
+		bodies[i].speed.y = 3E4 * sin(theta);	// sin(theta) * 6.5 * 10E3 * (dist / (60E3 * LY) - 1.3)* (dist / (60E3 * LY));
 		bodies[i].speed.z = 0;	//(rand() % 10000000 / 10000000.0) * 5000 - 2500;
 		theta = atan2(vz, vy) + PI / 2.0;
 		//bodies[i].speed.z = sin(theta) * 0.5 * 10E3 * (dist / (60E3 * LY) - 1.1) * (dist / (60E3 * LY));
 		//bodies[i].speed.y += cos(theta) * 0.5 * 10E3 * (dist / (60E3 * LY) - 1.1) * (dist / (60E3 * LY));
 		addBodyInNode(&bodies[i], &nodes[0]);
 	}
+	for (i = BODIES_QUANTITY / 20.0 * 19; i < BODIES_QUANTITY; i++) {
+#if 1
+		do {
+			vx = (rand() % 10000000 / 10000000.0) * 120E3 * LY -
+			    60E3 * LY;
+			vy = (rand() % 10000000 / 10000000.0) * 120E3 * LY -
+			    60E3 * LY;
+			vz = (rand() % 10000000 / 10000000.0) * 120E1 * LY -
+			    60E1 * LY;
+			dist = sqrt(vx * vx + vy * vy + vz * vz);
+		} while (dist > 60E3 * LY);
+#endif
+		bodies[i].position.x = vx;
+		bodies[i].position.y = vy;
+		bodies[i].position.z = vz;
+		bodies[i].force.x = 0;
+		bodies[i].force.y = 0;
+		bodies[i].force.z = 0;
+		theta = atan2(vy, vx) + PI / 2.0;
+		bodies[i].mass = 1E51 * (rand() % 10000000 / 10000000.0) + 1;
+		bodies[i].speed.x = 3E4 * cos(theta);	// cos(theta) * 6.5 * 10E3 * (dist / (60E3 * LY) - 1.3) * (dist / (60E3 * LY));
+		bodies[i].speed.y = 3E4 * sin(theta);	// sin(theta) * 6.5 * 10E3 * (dist / (60E3 * LY) - 1.3)* (dist / (60E3 * LY));
+		bodies[i].speed.z = 0;	//(rand() % 10000000 / 10000000.0) * 5000 - 2500;
+		theta = atan2(vz, vy) + PI / 2.0;
+		//bodies[i].speed.z = sin(theta) * 0.5 * 10E3 * (dist / (60E3 * LY) - 1.1) * (dist / (60E3 * LY));
+		//bodies[i].speed.y += cos(theta) * 0.5 * 10E3 * (dist / (60E3 * LY) - 1.1) * (dist / (60E3 * LY));
+		addBodyInNode(&bodies[i], &nodes[0]);
+	}
+	//Black Hole
+	/*
+	i--;
+	bodies[i].position.x = 0;
+	bodies[i].position.y = 0;
+	bodies[i].position.z = 0;
+	bodies[i].mass = 58E50;
+	bodies[i].speed.x = 0;
+	bodies[i].speed.y = 0;
+	bodies[i].speed.z = 0;
+	*/
 }
