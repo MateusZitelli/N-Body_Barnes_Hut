@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <GL/glut.h>
 #include "helper.h"
-#define colorMax 10E2
+#define colorMax 3E4
 
 float angleX = 0;
 float angleY = 0;
@@ -29,7 +29,145 @@ float positionZ = -10;
 int paused = 0, render = 1;
 int frame = 0;
 struct timespec start, end;
+float Color_list[56][3] = { {204, 0, 0},
+{102, 204, 0},
+{0, 204, 204},
+{102, 0, 204},
+
+{117, 80, 123},
+{122, 95, 80},
+{85, 122, 80},
+{80, 107, 122},
+
+{52, 101, 164},
+{163, 52, 156},
+{163, 115, 52},
+{52, 163, 60},
+
+{115, 210, 22},
+{21, 209, 209},
+{115, 21, 209},
+{209, 21, 21},
+
+{193, 125, 17},
+{17, 194, 38},
+{17, 85, 194},
+{194, 17, 173},
+
+{245, 121, 0},
+{0, 245, 0},
+{0, 122, 245},
+{254, 0, 245},
+
+{237, 212, 0},
+{0, 237, 95},
+{0, 24, 237},
+{237, 0, 142},
+
+{239, 41, 41},
+{140, 240, 41},
+{41, 240, 240},
+{140, 41, 240},
+
+{173, 127, 168},
+{173, 155, 127},
+{127, 173, 132},
+{127, 145, 173},
+
+{114, 159, 207},
+{207, 144, 205},
+{207, 162, 114},
+{114, 207, 115},
+
+{138, 226, 52},
+{52, 227, 227},
+{140, 52, 227},
+{227, 52, 52},
+
+{233, 185, 110},
+{109, 232, 123},
+{109, 156, 232},
+{232, 109, 218},
+
+{252, 175, 62},
+{63, 252, 82},
+{63, 139, 252},
+{252, 63, 234},
+
+{252, 233, 79},
+{78, 252, 145},
+{78, 99, 252},
+{252, 78, 186}
+};
+
 bitmap_t image;
+
+/* based on Delphi function by Witold J.Janik */
+void GiveRainbowColor(double position, unsigned char * c)
+{
+	/* if position > 1 then we have repetition of colors it maybe useful    */
+
+	if (position > 1.0) {
+		if (position - (int)position == 0.0)
+			position = 1.0;
+		else
+			position = position - (int)position;
+	}
+
+	unsigned char nmax = 6;	/* number of color segments */
+	double m = nmax * position;
+
+	int n = (int)m;		// integer of m
+
+	double f = m - n;	// fraction of m
+	unsigned char t = position * 0.1;
+
+	switch (n) {
+	case 0:{
+			c[0] = 255;
+			c[1] = t;
+			c[2] = 0;
+			break;
+		};
+	case 1:{
+			c[0] = 255 - t;
+			c[1] = 255;
+			c[2] = 0;
+			break;
+		};
+	case 2:{
+			c[0] = 0;
+			c[1] = 255;
+			c[2] = t;
+			break;
+		};
+	case 3:{
+			c[0] = 0;
+			c[1] = 255 - t;
+			c[2] = 255;
+			break;
+		};
+	case 4:{
+			c[0] = t;
+			c[1] = 0;
+			c[2] = 255;
+			break;
+		};
+	case 5:{
+			c[0] = 255;
+			c[1] = 0;
+			c[2] = 255 - t;
+			break;
+		};
+	default:{
+			c[0] = 255;
+			c[1] = 0;
+			c[2] = 0;
+			break;
+		};
+
+	};			// case
+}
 
 void initRendering()
 {
@@ -50,9 +188,10 @@ void handleResize(int w, int h)
 void drawScene()
 {
 	int i;
-	float r,g,b;
+	float r, g, b;
 	unsigned char pRGB[WIDTH * HEIGHT * 3 + 3];
 	double acel;
+	 unsigned char color[3];
 	char buf[20];
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -62,21 +201,44 @@ void drawScene()
 	glTranslatef(0.0f, 0.0f, positionZ);
 
 	glRotatef(angleX, 0.0f, 1.0f, 0.0f);
-	glRotatef(angleY, 1.0f, 0.0f, 0.0f);
+	glRotatef(angleY, 1.0f, 1.0f, 0.0f);
 	glBegin(GL_POINTS);
 	for (i = 0; i < BODIES_QUANTITY; i++) {
-	        acel = bodies[i].acel;
-	        r = acel;
-	        if(r > 1) r =1;
-	        g = acel;
-	        if(g > 1.0) g = 1 + r * 2;
-	        b = g + r;
-	        glColor4f(r + 0.2, g + 0.2, b + 0.2, 0.4f);
-		glVertex3f(bodies[i].position.x / (50000 * LY),
-			   bodies[i].position.y / (50000 * LY),
-			   bodies[i].position.z / (50000 * LY));
+		GiveRainbowColor(bodies[i].acel,  color);
+		glColor4f(color[0], color[1], color[2], 0.5f);
+		glVertex3f(bodies[i].position.x / (50000 * LY), bodies[i].position.y / (50000 * LY), bodies[i].position.z / (50000 * LY));
 	}
 	glEnd();
+	//Tree renderization
+#if 0
+	for (i = 0; i < node_quantity; i++) {
+		glColor4f(Color_list[i % 56][0] / 256.0, Color_list[i % 56][1] / 256.0, Color_list[i % 56][2] / 256.0, 1);
+		glBegin(GL_LINE_STRIP);
+		glVertex3f(nodes[i].start.x / (50000 * LY), nodes[i].start.y / (50000 * LY), nodes[i].start.z / (50000 * LY));
+		glVertex3f(nodes[i].start.x / (50000 * LY), nodes[i].end.y / (50000 * LY), nodes[i].start.z / (50000 * LY));
+		glVertex3f(nodes[i].end.x / (50000 * LY), nodes[i].end.y / (50000 * LY), nodes[i].start.z / (50000 * LY));
+		glVertex3f(nodes[i].end.x / (50000 * LY), nodes[i].start.y / (50000 * LY), nodes[i].start.z / (50000 * LY));
+		glVertex3f(nodes[i].start.x / (50000 * LY), nodes[i].start.y / (50000 * LY), nodes[i].start.z / (50000 * LY));
+		glVertex3f(nodes[i].start.x / (50000 * LY), nodes[i].start.y / (50000 * LY), nodes[i].end.z / (50000 * LY));
+		glVertex3f(nodes[i].start.x / (50000 * LY), nodes[i].end.y / (50000 * LY), nodes[i].end.z / (50000 * LY));
+		glVertex3f(nodes[i].start.x / (50000 * LY), nodes[i].end.y / (50000 * LY), nodes[i].start.z / (50000 * LY));
+		glEnd();
+		glBegin(GL_LINE_STRIP);
+		glVertex3f(nodes[i].start.x / (50000 * LY), nodes[i].end.y / (50000 * LY), nodes[i].end.z / (50000 * LY));
+		glVertex3f(nodes[i].end.x / (50000 * LY), nodes[i].end.y / (50000 * LY), nodes[i].end.z / (50000 * LY));
+		glVertex3f(nodes[i].end.x / (50000 * LY), nodes[i].start.y / (50000 * LY), nodes[i].end.z / (50000 * LY));
+		glVertex3f(nodes[i].start.x / (50000 * LY), nodes[i].start.y / (50000 * LY), nodes[i].end.z / (50000 * LY));
+		glEnd();
+		glBegin(GL_LINE_STRIP);
+		glVertex3f(nodes[i].end.x / (50000 * LY), nodes[i].start.y / (50000 * LY), nodes[i].end.z / (50000 * LY));
+		glVertex3f(nodes[i].end.x / (50000 * LY), nodes[i].start.y / (50000 * LY), nodes[i].start.z / (50000 * LY));
+		glEnd();
+		glBegin(GL_LINE_STRIP);
+		glVertex3f(nodes[i].end.x / (50000 * LY), nodes[i].end.y / (50000 * LY), nodes[i].start.z / (50000 * LY));
+		glVertex3f(nodes[i].end.x / (50000 * LY), nodes[i].end.y / (50000 * LY), nodes[i].end.z / (50000 * LY));
+		glEnd();
+	}
+#endif
 	glutSwapBuffers();
 	glFlush();
 #if 0
@@ -95,7 +257,8 @@ void drawScene()
 
 void update(int value)
 {
-	if(frame == 0) clock_gettime(CLOCK_MONOTONIC, &start);
+	if (frame == 0)
+		clock_gettime(CLOCK_MONOTONIC, &start);
 	int i, j, k;
 	//angleX += 0.5;
 	if (angleX > 360)
@@ -127,15 +290,11 @@ void update(int value)
 		bodies[i].speed.x += bodies[i].force.x / bodies[i].mass;
 		bodies[i].speed.y += bodies[i].force.y / bodies[i].mass;
 		bodies[i].speed.z += bodies[i].force.z / bodies[i].mass;
-		bodies[i].acel = sqrt(bodies[i].force.x * bodies[i].force.x + bodies[i].force.y * bodies[i].force.y + bodies[i].force.z * bodies[i].force.z) / bodies[i].mass / colorMax;
-		fprintf(positionData, "%i,%i,%i,%i\n",
-			(int)(bodies[i].position.x * 10E-16),
-			(int)(bodies[i].position.y * 10E-16),
-			(int)(bodies[i].position.z * 10E-16),
-			(int)bodies[i].acel);
-		bodies[i].position.x += bodies[i].speed.x * 5E13;
-		bodies[i].position.y += bodies[i].speed.y * 5E13;
-		bodies[i].position.z += bodies[i].speed.z * 5E13;
+		bodies[i].acel = sqrt(bodies[i].speed.x * bodies[i].speed.x + bodies[i].speed.y * bodies[i].speed.y + bodies[i].speed.z * bodies[i].speed.z) / colorMax;
+		fprintf(positionData, "%i,%i,%i,%i\n", (int)(bodies[i].position.x * 10E-16), (int)(bodies[i].position.y * 10E-16), (int)(bodies[i].position.z * 10E-16), (int)bodies[i].acel);
+		bodies[i].position.x += bodies[i].speed.x * 5E12;
+		bodies[i].position.y += bodies[i].speed.y * 5E12;
+		bodies[i].position.z += bodies[i].speed.z * 5E12;
 		bodies[i].force.x = 0;
 		bodies[i].force.y = 0;
 		bodies[i].force.z = 0;
@@ -189,7 +348,7 @@ void handleKeypress(unsigned char key, int x, int y)
 int main(int argc, char **argv)
 {
 	int i, frame = 0;
-	srand(time(0));
+	srand(0);
 	init();
 	image.width = WIDTH;
 	image.height = HEIGHT;

@@ -241,7 +241,7 @@ void drawScene()
 	glRotatef(angleY, 1.0f, 0.0f, 0.0f);
 	glBegin(GL_POINTS);
 	for (i = 0; i < points; i++) {
-		glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
+		glColor4f(1.0f, 1.0f, 1.0f, 0.8f);
 		glVertex3f(pointsData[i].x / (500000),
 			   pointsData[i].y / (500000),
 			   pointsData[i].z / (500000));

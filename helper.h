@@ -21,14 +21,14 @@
 #include <stdint.h>
 #include <time.h>
 #define MAX_NODES 1000000
-#define BODIES_QUANTITY 10000
+#define BODIES_QUANTITY 50000
 #define K 6.67259E-11
 #define ALPHA 1.0
 #define WIDTH 800
 #define HEIGHT 800
-#define EPS2 20E35
+#define EPS2 20E36
 #define PI 3.141592
-#define C 3E100
+#define C 3E10
 #define LY 9.4605284E15
 #define SIZE_OF_SIMULATION 120E3 * 5 * LY
 
@@ -69,6 +69,12 @@ struct node {
 	struct node *UP;
 	struct body centerOfMass;
 };
+
+typedef struct{
+        float r;
+        float g;
+        float b;
+} color;
 
 /* A coloured pixel. */
 
@@ -638,9 +644,9 @@ void init(void)
 		bodies[i].force.y = 0;
 		bodies[i].force.z = 0;
 		theta = atan2(vy, vx) + PI / 2.0;
-		bodies[i].mass = 1E-10;
-		bodies[i].speed.x = 3E4 * cos(theta);	// cos(theta) * 6.5 * 10E3 * (dist / (60E3 * LY) - 1.3) * (dist / (60E3 * LY));
-		bodies[i].speed.y = 3E4 * sin(theta);	// sin(theta) * 6.5 * 10E3 * (dist / (60E3 * LY) - 1.3)* (dist / (60E3 * LY));
+		bodies[i].mass = 1E50;
+		bodies[i].speed.x = 12E3 * cos(theta);
+		bodies[i].speed.y = 12E3 * sin(theta);
 		bodies[i].speed.z = 0;	//(rand() % 10000000 / 10000000.0) * 5000 - 2500;
 		theta = atan2(vz, vy) + PI / 2.0;
 		//bodies[i].speed.z = sin(theta) * 0.5 * 10E3 * (dist / (60E3 * LY) - 1.1) * (dist / (60E3 * LY));
@@ -666,22 +672,19 @@ void init(void)
 		bodies[i].force.y = 0;
 		bodies[i].force.z = 0;
 		theta = atan2(vy, vx) + PI / 2.0;
-		bodies[i].mass = 1E51 * (rand() % 10000000 / 10000000.0) + 1;
-		bodies[i].speed.x = 3E4 * cos(theta);	// cos(theta) * 6.5 * 10E3 * (dist / (60E3 * LY) - 1.3) * (dist / (60E3 * LY));
-		bodies[i].speed.y = 3E4 * sin(theta);	// sin(theta) * 6.5 * 10E3 * (dist / (60E3 * LY) - 1.3)* (dist / (60E3 * LY));
+		bodies[i].mass = 1E50 * (rand() % 10000000 / 10000000.0) + 1;
+		bodies[i].speed.x = 60E3 * cos(theta);	// cos(theta) * 6.5 * 10E3 * (dist / (60E3 * LY) - 1.3) * (dist / (60E3 * LY));
+		bodies[i].speed.y = 60E3 * sin(theta);	// sin(theta) * 6.5 * 10E3 * (dist / (60E3 * LY) - 1.3)* (dist / (60E3 * LY));
 		bodies[i].speed.z = 0;	//(rand() % 10000000 / 10000000.0) * 5000 - 2500;
 		theta = atan2(vz, vy) + PI / 2.0;
-		//bodies[i].speed.z = sin(theta) * 0.5 * 10E3 * (dist / (60E3 * LY) - 1.1) * (dist / (60E3 * LY));
-		//bodies[i].speed.y += cos(theta) * 0.5 * 10E3 * (dist / (60E3 * LY) - 1.1) * (dist / (60E3 * LY));
 		addBodyInNode(&bodies[i], &nodes[0]);
-	}
+	}/*
 	//Black Hole
-	/*
 	i--;
 	bodies[i].position.x = 0;
 	bodies[i].position.y = 0;
 	bodies[i].position.z = 0;
-	bodies[i].mass = 58E50;
+	bodies[i].mass = 80E51;
 	bodies[i].speed.x = 0;
 	bodies[i].speed.y = 0;
 	bodies[i].speed.z = 0;
