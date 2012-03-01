@@ -632,8 +632,8 @@ void init(void)
 			    60E3 * LY;
 			vy = (rand() % 10000000 / 10000000.0) * 120E3 * LY -
 			    60E3 * LY;
-			vz = (rand() % 10000000 / 10000000.0) * 120E1 * LY -
-			    60E1 * LY;
+			vz = (rand() % 10000000 / 10000000.0) * 120E2 * LY -
+			    60E2 * LY;
 			dist = sqrt(vx * vx + vy * vy + vz * vz);
 		} while (dist > 60E3 * LY);
 #endif
@@ -645,8 +645,8 @@ void init(void)
 		bodies[i].force.z = 0;
 		theta = atan2(vy, vx) + PI / 2.0;
 		bodies[i].mass = 1E50;
-		bodies[i].speed.x = 12E3 * cos(theta);
-		bodies[i].speed.y = 12E3 * sin(theta);
+		bodies[i].speed.x = 60E3 * cos(theta);
+		bodies[i].speed.y = 60E3 * sin(theta);
 		bodies[i].speed.z = 0;	//(rand() % 10000000 / 10000000.0) * 5000 - 2500;
 		theta = atan2(vz, vy) + PI / 2.0;
 		//bodies[i].speed.z = sin(theta) * 0.5 * 10E3 * (dist / (60E3 * LY) - 1.1) * (dist / (60E3 * LY));
@@ -660,8 +660,8 @@ void init(void)
 			    60E3 * LY;
 			vy = (rand() % 10000000 / 10000000.0) * 120E3 * LY -
 			    60E3 * LY;
-			vz = (rand() % 10000000 / 10000000.0) * 120E1 * LY -
-			    60E1 * LY;
+			vz = (rand() % 10000000 / 10000000.0) * 120E2 * LY -
+			    60E2 * LY;
 			dist = sqrt(vx * vx + vy * vy + vz * vz);
 		} while (dist > 60E3 * LY);
 #endif

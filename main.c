@@ -292,9 +292,9 @@ void update(int value)
 		bodies[i].speed.z += bodies[i].force.z / bodies[i].mass;
 		bodies[i].acel = sqrt(bodies[i].speed.x * bodies[i].speed.x + bodies[i].speed.y * bodies[i].speed.y + bodies[i].speed.z * bodies[i].speed.z) / colorMax;
 		fprintf(positionData, "%i,%i,%i,%i\n", (int)(bodies[i].position.x * 10E-16), (int)(bodies[i].position.y * 10E-16), (int)(bodies[i].position.z * 10E-16), (int)bodies[i].acel);
-		bodies[i].position.x += bodies[i].speed.x * 5E12;
-		bodies[i].position.y += bodies[i].speed.y * 5E12;
-		bodies[i].position.z += bodies[i].speed.z * 5E12;
+		bodies[i].position.x += bodies[i].speed.x * 50E12;
+		bodies[i].position.y += bodies[i].speed.y * 50E12;
+		bodies[i].position.z += bodies[i].speed.z * 50E12;
 		bodies[i].force.x = 0;
 		bodies[i].force.y = 0;
 		bodies[i].force.z = 0;
