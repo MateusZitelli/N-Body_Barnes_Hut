@@ -1,0 +1,12 @@
+#define MAX_NODES 1000000
+#define BODIES_QUANTITY 50000
+#define K 6.67259E-11
+#define ALPHA 0.5
+#define WIDTH 800
+#define HEIGHT 800
+#define EPS2 20E36
+#define PI 3.141592
+#define C 3E10
+#define LY 9.4605284E15
+#define SIZE_OF_SIMULATION 120E1 * 5 * LY
+

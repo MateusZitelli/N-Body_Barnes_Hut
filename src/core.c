@@ -1,96 +1,14 @@
-//Barnes-hut implementation - O(n log n) nbody algorithm implementation
-
-//Copyright 2012 Mateus Zitelli <zitellimateus@gmail.com>
-
-//This program is free software; you can redistribute it and/or modify
-//it under the terms of the GNU General Public License as published by
-//the Free Software Foundation; either version 2 of the License, or
-//(at your option) any later version.
-
-//This program is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//GNU General Public License for more details.
-
-//You should have received a copy of the GNU General Public License
-//along with this program; if not, write to the Free Software
-//Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-//MA 02110-1301, USA.
-
 #include <png.h>
 #include <stdint.h>
 #include <time.h>
-#define MAX_NODES 1000000
-#define BODIES_QUANTITY 50000
-#define K 6.67259E-11
-#define ALPHA 1.0
-#define WIDTH 800
-#define HEIGHT 800
-#define EPS2 20E36
-#define PI 3.141592
-#define C 3E10
-#define LY 9.4605284E15
-#define SIZE_OF_SIMULATION 120E3 * 5 * LY
+#include "config.h"
+#include "core.h"
 
-int node_quantity;
-int roots_quantity;
-FILE *positionData;
+#define colorMax 3E4
 
-struct coord {
-	double x;
-	double y;
-	double z;
-};
-
-struct body {
-	struct coord position;
-	struct coord force;
-	struct coord speed;
-	double acel;
-	double mass;
-};
-
-struct node {
-	struct coord start;
-	struct coord end;
-	int bodies_quantity;
-	int initialized;
-	int has_center_of_mass;
-	int deep;
-	struct body **bodies;
-	struct node *UNE;
-	struct node *USE;
-	struct node *USW;
-	struct node *UNW;
-	struct node *DNE;
-	struct node *DSE;
-	struct node *DSW;
-	struct node *DNW;
-	struct node *UP;
-	struct body centerOfMass;
-};
-
-typedef struct{
-        float r;
-        float g;
-        float b;
-} color;
-
-/* A coloured pixel. */
-
-typedef struct {
-	uint8_t red;
-	uint8_t green;
-	uint8_t blue;
-} pixel_t;
-
-/* A picture. */
-
-typedef struct {
-	pixel_t *pixels;
-	size_t width;
-	size_t height;
-} bitmap_t;
+extern int paused, render, frame;
+extern float angleX, angleY, positionZ;
+extern struct timespec start, end;
 
 int64_t timespecDiff(struct timespec *timeA_p, struct timespec *timeB_p)
 {
@@ -607,9 +525,10 @@ void init(void)
 	int i, j;
 	double vx, vy, vz, theta, dist, dist2;
 	positionData = fopen("positionData.csv", "wb");
-	nodes = (struct node *)malloc(sizeof(struct node) * MAX_NODES);
-	roots = (struct node **)malloc(sizeof(struct node *) * MAX_NODES);
-	bodies = (struct body *)malloc(sizeof(struct body) * BODIES_QUANTITY);
+	nodes = (struct node *) malloc(sizeof(struct node) * MAX_NODES);
+	roots = (struct node **) malloc(sizeof(struct node *) * MAX_NODES);
+	bodies = (struct body *) malloc(sizeof(struct body) * BODIES_QUANTITY);
+
 	for (i = 0; i < MAX_NODES; i++) {
 		nodes[i].initialized = 0;
 		nodes[i].UNE = NULL;
@@ -621,6 +540,7 @@ void init(void)
 		nodes[i].DSE = NULL;
 		nodes[i].DSW = NULL;
 	}
+
 	initializeNode(&nodes[0], NULL, -SIZE_OF_SIMULATION * 30,
 		       -SIZE_OF_SIMULATION * 30, -SIZE_OF_SIMULATION * 30,
 		       SIZE_OF_SIMULATION* 30, SIZE_OF_SIMULATION* 30,
@@ -690,3 +610,59 @@ void init(void)
 	bodies[i].speed.z = 0;
 	*/
 }
+
+
+void update(int value){
+	if (frame == 0)
+		clock_gettime(CLOCK_MONOTONIC, &start);
+	int i, j, k;
+	//angleX += 0.5;
+	if (angleX > 360)
+		angleX -= 360;
+	if (angleY > 360)
+		angleY -= 360;
+	if (angleX < 0)
+		angleX += 360;
+	if (angleY < 0)
+		angleY += 360;
+	roots_quantity = 0;
+	resetNodes();
+	divideNode(&nodes[0]);
+#pragma omp parallel for
+	for (i = 0; i < node_quantity; i++) {
+		setCenterOfMass(&nodes[i]);
+	}
+#pragma omp parallel for
+	for (i = 0; i < roots_quantity; i++) {
+#pragma omp parallel for
+		for (j = 0; j < roots[i]->bodies_quantity; j++) {
+			forceOverNode(roots[i], NULL, roots[i]->bodies[j], 0);
+		}
+	}
+	fprintf(positionData, "FF\n");
+	if (render)
+		glutPostRedisplay();
+	for (i = 0; i < BODIES_QUANTITY; i++) {
+		bodies[i].speed.x += bodies[i].force.x / bodies[i].mass;
+		bodies[i].speed.y += bodies[i].force.y / bodies[i].mass;
+		bodies[i].speed.z += bodies[i].force.z / bodies[i].mass;
+		bodies[i].acel = sqrt(bodies[i].speed.x * bodies[i].speed.x +
+        bodies[i].speed.y * bodies[i].speed.y + bodies[i].speed.z *
+        bodies[i].speed.z) / colorMax;
+		fprintf(positionData, "%i,%i,%i,%i\n",
+        (int)(bodies[i].position.x * 10E-16), 
+        (int)(bodies[i].position.y * 10E-16),
+        (int)(bodies[i].position.z * 10E-16),
+        (int)bodies[i].acel);
+		bodies[i].position.x += bodies[i].speed.x * 50E12;
+		bodies[i].position.y += bodies[i].speed.y * 50E12;
+		bodies[i].position.z += bodies[i].speed.z * 50E12;
+		bodies[i].force.x = 0;
+		bodies[i].force.y = 0;
+		bodies[i].force.z = 0;
+	}
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	printf("Time Ellapsed = %f\n", timespecDiff(&end, &start) / (float)++frame);
+}
+
+
