@@ -27,6 +27,11 @@ After build the binary just run it:
 $ ./nbody.bin
 ```
 
+Some option can be passed by command line attributes, they are:
+- `-f N` Close the simulation after N frames
+- `-n N` Use N bodies in the simulation
+- `-b 0|1` Run in branchmark mode
+
 All the position from each body in each frame will be stored in a file called
 positionData.csv for further studies.
 

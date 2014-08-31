@@ -8,5 +8,6 @@
 #define PI 3.141592
 #define C 3E10
 #define LY 9.4605284E15
-#define SIZE_OF_SIMULATION 120E1 * 5 * LY
+#define SIZE_OF_SIMULATION 120E2 * 5 * LY
+#define TOTAL_MASS 1e49 * 50000 
 

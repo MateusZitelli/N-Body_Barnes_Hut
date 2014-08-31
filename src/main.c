@@ -24,27 +24,90 @@
 #include "render.h"
 #include "config.h"
 
+#include <string.h>
+
+int bodiesQuantity = BODIES_QUANTITY;
+int frameLimit = -1;
+int visualMode = 1;
+
 bitmap_t image;
 
-int main(int argc, char **argv){
-	int i, frame = 0;
-	srand(0);
-	init();
-	image.width = WIDTH;
-	image.height = HEIGHT;
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_ALPHA | GLUT_DEPTH);
-	glutInitWindowSize(WIDTH, HEIGHT);
+void
+readArgs (int argc, char **argv)
+{
+  int i, frame = 0;
+  int m, n,			/* Loop counters. */
+    l,				/* String length. */
+    x,				/* Exit code. */
+    ch;				/* Character buffer. */
+  char s[256];			/* String buffer. */
 
-	glutCreateWindow("teste");
-	initRendering();
+  for (n = 1; n < argc; n++) {	/* Scan through args. */
+    switch ((int) argv[n][0]) {	/* Check for option character. */
+    case '-':
+    case '/':
+      x = 0;			/* Bail out if 1. */
+      l = strlen (argv[n]);
+      for (m = 1; m < l; ++m) {	/* Scan through options. */
+	ch = (int) argv[n][m];
+	switch (ch) {
+	case 'n':		/* Legal options. */
+	case 'N':
+	case 'f':
+	case 'F':
+	case 'b':
+	case 'B':
+	  break;
+	default:
+	  printf ("Illegal option code = %c\n", ch);
+	  x = 1;		/* Not legal option. */
+	  exit (1);
+	  break;
+	}
+	if (x == 1) {
+	  break;
+	}
+      }
+      break;
+    default:
+      if (ch == 'n' || ch == 'N') {
+        bodiesQuantity = atoi (argv[n]);
+      } else if (ch == 'f' || ch == 'F') {
+        frameLimit = atoi (argv[n]);
+      } else if (ch == 'b' || ch == 'B'){
+       visualMode = atoi(argv[n]); 
+      }
+      break;
+    }
+  }
+}
 
-	glutDisplayFunc(drawScene);
-	glutKeyboardFunc(handleKeypress);
-	glutSpecialFunc(handleKeypress);
-	glutReshapeFunc(handleResize);
-	glutIdleFunc(update);
+int
+main (int argc, char **argv)
+{
+  readArgs (argc, argv);
 
-	glutMainLoop();
-	return 0;
+  srand (0);
+  init ();
+  if(visualMode){
+    image.width = WIDTH;
+    image.height = HEIGHT;
+    glutInit (&argc, argv);
+    glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGBA | GLUT_ALPHA | GLUT_DEPTH);
+    glutInitWindowSize (WIDTH, HEIGHT);
+
+    glutCreateWindow ("teste");
+    initRendering ();
+
+    glutDisplayFunc (drawScene);
+    glutKeyboardFunc (handleKeypress);
+    glutSpecialFunc (handleKeypress);
+    glutReshapeFunc (handleResize);
+    glutIdleFunc (update);
+
+    glutMainLoop ();
+  }else{
+    benchMode();   
+  }
+  return 0;
 }
