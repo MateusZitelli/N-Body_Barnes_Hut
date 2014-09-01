@@ -13,8 +13,8 @@ extern struct timespec start, end;
 int64_t
 timespecDiff (struct timespec *timeA_p, struct timespec *timeB_p)
 {
-  return ((timeA_p->tv_sec * 1000000000) + timeA_p->tv_nsec) -
-      ((timeB_p->tv_sec * 1000000000) + timeB_p->tv_nsec);
+    return((timeA_p->tv_sec - timeB_p->tv_sec) * 1000000000 +
+    timeA_p->tv_nsec - timeB_p->tv_nsec);
 }
 
 /* Write "bitmap" to a PNG file specified by "path"; returns 0 on
@@ -177,7 +177,6 @@ resetNodes (void)
   nodes[0].initialized = 0;
   nodes[0].has_center_of_mass = 0;
   int i;
-  printf ("Reset %i\n", node_quantity);
   for (i = 1; i < node_quantity; i++) {
     nodes[i].UNE = NULL;
     nodes[i].UNW = NULL;
@@ -543,9 +542,11 @@ init (void)
 void
 update (int value)
 {
-  if (frame == 0)
+  if (frame == 0){
     clock_gettime (CLOCK_MONOTONIC, &start);
-  else if(frame == frameLimit){
+  }else if(frame == frameLimit){
+    clock_gettime (CLOCK_MONOTONIC, &end);
+    printf ("Simulation time Ellapsed = %f\n", timespecDiff(&end, &start) / 1e9);
     exit(0);
   }
   int i, j, k;
@@ -593,9 +594,7 @@ update (int value)
     bodies[i].force.y = 0;
     bodies[i].force.z = 0;
   }
-  clock_gettime (CLOCK_MONOTONIC, &end);
-  printf ("Time Ellapsed = %f\n",
-	  timespecDiff (&end, &start) / (float) ++frame);
+  frame++;
 }
 
 void benchMode(){

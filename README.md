@@ -30,7 +30,7 @@ $ ./nbody.bin
 Some option can be passed by command line attributes, they are:
 - `-f N` Close the simulation after N frames
 - `-n N` Use N bodies in the simulation
-- `-b 0|1` Run in branchmark mode
+- `-b 0|1` Run in benchmark mode
 
 All the position from each body in each frame will be stored in a file called
 positionData.csv for further studies.
@@ -38,5 +38,8 @@ positionData.csv for further studies.
 You can navigate in the simulation using the arrow keys, to speed up the process
 you can pause using the "r" key, witch will toggle the rendering on and off.
 To pause the simulation for a more smooth navigation you can use the "p" key.
+
+In the end of running with limited number of frames the program print the
+duration of the simulation.
 
 **Happy Hack :)**
