@@ -29,7 +29,7 @@ class Profiler:
                 if(timeMatch):
                     duration = timeMatch.group(1)
                     print(command, 'took', duration, 'seconds')
-                    collection.append(float(duration))
+                    collection.append(float(duration) / self.frames)
             self.results.append(collection)
 
     def analise(self):
@@ -40,23 +40,23 @@ class Profiler:
         self.popt, self.pcov = curve_fit(func, self.x, self.meanResults)
 
     def plot(self):
-        equationStringified = "%f * x * log(%f * x) + %f" %\
+        equationStringified = "%e * x * log(%e * x) + %e" %\
             (self.popt[0], self.popt[1], self.popt[2])
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        ax.set_title('Resultados e Modelo')
+        ax.set_title('Resultados')
         ax.errorbar(self.x, self.meanResults, self.stdResults, fmt='o',
                 label="Media e desvio padrao das %i medicoes"%(self.repetitions))
         ax.plot(self.x, func(self.x, *self.popt), 'r-',
                 label=equationStringified)
         plt.legend(loc='upper left')
         ax.set_xlabel('Numero de corpos')
-        ax.set_ylabel('Tempo de simulacao (s)')
+        ax.set_ylabel('Tempo medio por frame de simulacao (s)')
         plt.show()
 
 
 if __name__ == "__main__":
-    NbodyProfiler = Profiler([10,400, 10], 1000, 3)
+    NbodyProfiler = Profiler([1,500, 20], 1000, 5)
     NbodyProfiler.run()
     NbodyProfiler.analise()
     NbodyProfiler.plot()
