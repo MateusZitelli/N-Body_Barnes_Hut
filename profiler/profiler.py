@@ -56,7 +56,7 @@ class Profiler:
 
 
 if __name__ == "__main__":
-    NbodyProfiler = Profiler([250,10000, 500], 100, 2)
+    NbodyProfiler = Profiler([10,400, 10], 1000, 3)
     NbodyProfiler.run()
     NbodyProfiler.analise()
     NbodyProfiler.plot()

@@ -20,12 +20,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <GL/glut.h>
+#include <time.h>
+#include <string.h>
 #include "core.h"
 #include "render.h"
 #include "config.h"
 
-#include <string.h>
-
+struct timespec start;
 int bodiesQuantity = BODIES_QUANTITY;
 int frameLimit = -1;
 int visualMode = 1;
@@ -85,8 +86,8 @@ readArgs (int argc, char **argv)
 int
 main (int argc, char **argv)
 {
+  clock_gettime (CLOCK_MONOTONIC, &start);
   readArgs (argc, argv);
-
   srand (0);
   init ();
   if(visualMode){

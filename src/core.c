@@ -542,9 +542,8 @@ init (void)
 void
 update (int value)
 {
-  if (frame == 0){
-    clock_gettime (CLOCK_MONOTONIC, &start);
-  }else if(frame == frameLimit){
+    
+  if(frame == frameLimit){
     clock_gettime (CLOCK_MONOTONIC, &end);
     printf ("Simulation time Ellapsed = %f\n", timespecDiff(&end, &start) / 1e9);
     exit(0);
