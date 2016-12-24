@@ -1,9 +1,11 @@
 # Barnes-Hut 
-> N-Body simulation in linearithmic time 
+> N-Body simulation in linearithmic time
 
 This project aims to develop and analyse the [Barnes-Hut algorithm](http://arborjs.org/docs/barnes-hut), to solve the problem of n-bodies attracting each other gravitationally in O(n * log(n)) time.
 
 The source code is of the implementation is in C in the ```src``` folder, and a profile written in Python can be found in the ```profiler``` folder.
+
+![](https://github.com/MateusZitelli/N-Body_Barnes_Hut/raw/master/profiler/1_500_20corpos_1000frames_5medicoes.png)
 
 ## Dependencies of C implementation
 Seen that this is a C program that uses OpenGL you'll need to install the basic
